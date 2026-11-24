@@ -31,10 +31,4 @@ EXPOSE $PORT
 
 # Gunicorn with eventlet for SocketIO support.
 # 1 worker + eventlet async is the recommended setup for Flask-SocketIO.
-CMD gunicorn \
-        --worker-class eventlet \
-        --workers 1 \
-        --bind 0.0.0.0:$PORT \
-        --timeout 120 \
-        --log-level info \
-        "dashboard:app"
+CMD python dashboard.py

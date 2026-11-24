@@ -372,10 +372,17 @@ for _trap_path in _DECOY_PATHS:
 # ---------------------------------------------------------------------------
 # Service Orchestrator
 # ---------------------------------------------------------------------------
+_services_started = False
+
 def start_services():
     """Starts SSH Honeypot and Canary Watchdog in background daemon threads.
     Both are wrapped in try/except so restricted cloud containers never crash.
     """
+    global _services_started
+    if _services_started:
+        return
+    _services_started = True
+
     db.init_db()
 
     # 1. Start SSH Honeypot — optional on restricted platforms
@@ -407,6 +414,9 @@ def start_services():
         canary.start_canary_monitor(on_breach_callback=on_canary_event)
     except Exception as exc:
         print(f"[HoneyGuard] WARNING: Canary monitor could not start: {exc}")
+
+# Auto-start services on module load so it works under any runner
+start_services()
 
 
 # ---------------------------------------------------------------------------
