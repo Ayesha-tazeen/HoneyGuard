@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: honeyguard
+    env: python
+    region: singapore  # change to your preferred region
+    plan: free
+    rootDir: HoneyGuard
+    buildCommand: pip install -r requirements.txt
+    startCommand: >
+      gunicorn
+      --worker-class eventlet
+      --workers 1
+      --bind 0.0.0.0:$PORT
+      --timeout 120
+      --log-level info
+      "dashboard:app"
+    envVars:
+      - key: DASHBOARD_USERNAME
+        value: admin
+      - key: DASHBOARD_PASSWORD
+        generateValue: true
+      - key: DASHBOARD_SECRET_KEY
+        generateValue: true
+      - key: DRY_RUN
+        value: "True"
+      - key: HONEYPOT_PORT
+        value: "2222"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    # SSH port 2222 may be blocked on Render free tier.
+    # HoneyGuard auto-falls back to HTTP Decoy Traps in that case.
+    healthCheckPath: /login

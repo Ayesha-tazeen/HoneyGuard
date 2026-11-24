@@ -1,0 +1,23 @@
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+venv/
+env/
+ENV/
+*.venv
+
+# Database & Keys
+*.db
+*.sqlite3
+host_rsa.key
+
+# Reports generated
+HoneyGuard/reports/*.pdf
+
+# IDEs
+.vscode/
+.idea/

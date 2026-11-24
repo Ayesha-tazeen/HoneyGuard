@@ -1,211 +1,197 @@
-# 🍯 HoneyGuard: A Real-Time Honeypot-Based Intrusion Detection and Auto-Response System
+# 🍯 HoneyGuard v2.0 — Intrusion Detection & SOC Dashboard
 
-**BCA Final-Year Minor Project**  
-*Designed for small businesses, medical clinics, coaching centres, and academic computer laboratories.*
+> **High-contrast Midnight Slate SOC UI · 1-Click Attack Simulator · HTTP Decoy Traps · Cloud-Ready (Render/Railway)**
 
----
-
-## ⚠️ Important Safety & Ethical Disclosure
-> **Educational & Defensive Use Only:** This honeypot decoy system is designed exclusively for deployment in authorized private networks or virtual test environments (e.g., local VMs). The provided attack simulation tool (`test_attack.py`) is hardcoded to target only your local loopback address (`127.0.0.1`). **Never deploy attack scripts against external hosts or networks without explicit written permission.**
+HoneyGuard is a fully-featured honeypot and intrusion detection system with a real-time Flask + SocketIO dashboard. It captures SSH brute-force attacks, credential stuffing, port scans, and canary breaches — and now also traps real web bots via HTTP Decoy endpoints when deployed to the cloud.
 
 ---
 
-## 📌 Project Overview
-Small organizations—such as coaching institutes, outpatient clinics, and accounting offices—frequently run exposed servers (e.g., CCTV NVRs, tally servers, database backups) without dedicated Security Operations Center (SOC) personnel. 
+## ✨ What's New in v2.0
 
-**HoneyGuard** solves this dilemma by deploying a lightweight, high-interaction decoy SSH service. It deceives external attackers, captures credentials, evaluates threat patterns via a real-time rule engine, notifies administrators via Telegram, automatically issues firewall bans (with safe Dry-Run mode), traps lateral movement using canary files, and displays real-time threat intelligence on a live web dashboard.
+| Feature | Detail |
+|---------|--------|
+| **Midnight Slate SOC Theme** | `#0f172a` bg · `#1e293b` cards · `#334155` borders · `#f8fafc` text |
+| **Bright Severity Badges** | `CRITICAL` (purple pulse) · `HIGH` (red pulse) · `MEDIUM` (amber) · `LOW` (green) |
+| **Attack Breakdown Chart** | Doughnut Chart.js replacing the Leaflet map (no external tile server needed) |
+| **Top Usernames/Passwords Tables** | Rank-ordered tables replacing old list items |
+| **1-Click Attack Simulator** | Panel in dashboard → `POST /api/simulate/<type>` (Brute Force · Cred Stuffing · Port Scan · Canary · All) |
+| **HTTP Decoy Traps** | `/wp-login.php`, `/phpmyadmin`, `/.env`, `/admin-portal`, `/.git/config` etc. hooked into the live feed |
+| **Cloud-Aware Binding** | Binds `0.0.0.0:$PORT` on Render/Railway, `127.0.0.1:5000` locally |
+| **Gunicorn + Dockerfile** | Production-grade WSGI setup with eventlet worker |
+| **Graceful SSH Fallback** | SSH port 2222 and firewall commands wrapped in `try/except` — cloud containers never crash |
 
 ---
 
-## 🏗️ System Architecture
+## 📁 Project Structure
 
-```text
-       +-------------------------------------------------------------+
-       |                   INTRUDER / BOTNET                         |
-       +-------------------------------------------------------------+
-                                     |
-               (Attempting SSH Logins on Port 2222)
-                                     v
-       +-------------------------------------------------------------+
-       |             HONEYGUARD DECOY SSH SERVER                     |
-       |  - Paramiko Server Interface                                |
-       |  - ALWAYS Rejects Password Auth (AUTH_FAILED)               |
-       |  - Zero Shell / PTY / Command Execution Permitted           |
-       +-------------------------------------------------------------+
-                                     |
-                 (Intercepts IP, User, Password, Time)
-                                     v
-       +-------------------------------------------------------------+
-       |              REAL-TIME DETECTION RULE ENGINE                |
-       |  - Brute Force: >= 5 attempts in 60s                        |
-       |  - Credential Stuffing: >= 4 distinct users in 120s         |
-       |  - Port Scan: >= 5 raw connections in 30s                   |
-       +-------------------------------------------------------------+
-                     |                       |               |
-                     v                       v               v
-           +--------------------+  +------------------+  +-------------------+
-           | TELEGRAM BOT ALERT |  |  FIREWALL BLOCK  |  |  CANARY MONITOR   |
-           | Instant Push Alert |  | Windows: netsh   |  | passwords.xlsx    |
-           | to Admin Phone     |  | Linux:   ufw     |  | (Watchdog Trap)   |
-           | (.env Configured)  |  | (DRY_RUN Safe)   |  |                   |
-           +--------------------+  +------------------+  +-------------------+
-                     \                       |               /
-                      \                      v              /
-                       +-----------------------------------+
-                       |    SQLITE3 THREAT DATABASE        |
-                       |  (Attacks, Alerts, Bans, Canaries)|
-                       +-----------------------------------+
-                                         |
-                                         v
-       +-------------------------------------------------------------+
-       |            SOC WEB DASHBOARD (Flask + Socket.IO)            |
-       |  - Bound strictly to 127.0.0.1:5000                         |
-       |  - Anti-XSS Architecture (textContent DOM Rendering Only)  |
-       |  - Live Attack Feed & Attempts/Min Line Chart (Chart.js)    |
-       |  - Global Attack Origin Map (Leaflet.js + Offline GeoIP)   |
-       |  - Executive PDF Security Incident Reports (ReportLab)      |
-       +-------------------------------------------------------------+
 ```
-
----
-
-## 🛠️ Technology Stack
-* **Language:** Python 3.10+
-* **Decoy SSH Engine:** Paramiko
-* **Storage:** SQLite3 (Thread-safe concurrency with `threading.RLock`)
-* **Web SOC Dashboard:** Flask, Flask-SocketIO (WebSocket events)
-* **Visualizations:** Chart.js (Line graphs), Leaflet.js (Attacker location map)
-* **Threat Notification:** Telegram Bot API (`requests`)
-* **Host Defense / Auto-Response:** Windows Defender Firewall (`netsh advfirewall`) & Linux (`ufw`)
-* **Canary Trap:** Python `watchdog` & `openpyxl`
-* **Audit & Reporting:** ReportLab PDF Engine
-
----
-
-## 📁 Project Directory Structure
-```text
 HoneyGuard/
-├── .env.example          # Sample environment secrets template
-├── .env                  # Active credentials (ignored by git)
-├── .gitignore            # Git exclusion rules
-├── requirements.txt      # Python dependencies
-├── config.py             # Central configuration, rule windows & thresholds
-├── db.py                 # SQLite database schema, queries, threat level
-├── honeypot.py           # Paramiko decoy SSH server engine
-├── rules.py              # Real-time intrusion detection rule engine
-├── alerts.py             # Telegram alert dispatcher (with local mock mode)
-├── blocker.py            # Windows/Linux firewall auto-blocker with allowlist
-├── canary.py             # Fake passwords.xlsx decoy generator & watchdog
-├── report.py             # ReportLab PDF threat summary generator
-├── dashboard.py          # Unified Flask-SocketIO SOC dashboard server
-├── templates/
-│   ├── login.html        # Secure dashboard login screen
-│   └── index.html        # SOC control panel, live charts, feeds & map
-├── static/
-│   ├── css/style.css     # Dark mode SOC theme styling
-│   └── js/dashboard.js   # Real-time WebSocket handlers & Anti-XSS rendering
-└── test_attack.py        # Safe local intrusion simulation test suite
+├── HoneyGuard/
+│   ├── dashboard.py          # Flask app + REST APIs + Simulator + HTTP Traps
+│   ├── config.py             # Cloud-aware configuration
+│   ├── db.py                 # SQLite database layer
+│   ├── honeypot.py           # Paramiko SSH honeypot server
+│   ├── rules.py              # Brute-Force / CredStuffing / PortScan detection
+│   ├── blocker.py            # Firewall auto-block (iptables / dry-run)
+│   ├── canary.py             # Canary file watchdog
+│   ├── alerts.py             # Telegram alert integration
+│   ├── report.py             # PDF report generator
+│   ├── test_attack.py        # CLI attack simulator (unchanged, still works)
+│   ├── requirements.txt      # Python dependencies
+│   ├── .env.example          # Environment variable template
+│   ├── templates/
+│   │   ├── index.html        # Main SOC dashboard (Chart.js + Simulator panel)
+│   │   └── login.html        # Admin login page
+│   └── static/
+│       ├── css/style.css     # Midnight Slate SOC theme
+│       └── js/dashboard.js   # Real-time WebSocket client (textContent Anti-XSS)
+├── Dockerfile                # Multi-stage Docker build
+├── render.yaml               # Render.com deployment config
+└── README.md                 # This file
 ```
 
 ---
 
-## 🚀 Setup & Installation (Windows PowerShell / CMD)
+## 🚀 Quick Start (Local)
 
-### 1. Clone or Open the Workspace
-```powershell
-cd HoneyGuard
-```
+```bash
+# 1. Clone & enter
+cd HoneyGuard/HoneyGuard
 
-### 2. Create and Activate Virtual Environment (Optional but recommended)
-```powershell
+# 2. Create virtual environment
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-```
+venv\Scripts\activate          # Windows
+# source venv/bin/activate     # Linux/macOS
 
-### 3. Install Dependencies
-```powershell
+# 3. Install dependencies
 pip install -r requirements.txt
-```
 
-### 4. Configure Environment
-A default `.env` file is pre-populated. To receive live Telegram alerts on your phone:
-1. Talk to `@BotFather` on Telegram to create a bot and get a `TELEGRAM_BOT_TOKEN`.
-2. Talk to `@userinfobot` to get your numerical `TELEGRAM_CHAT_ID`.
-3. Open `.env` and set:
-   ```ini
-   TELEGRAM_BOT_TOKEN=123456789:ABCdefGhIJKlmNoPQRstuVWXyz
-   TELEGRAM_CHAT_ID=987654321
-   TELEGRAM_ENABLED=True
-   ```
-*(If left disabled, HoneyGuard automatically switches to Mock Console Mode, which prints realistic formatted alerts to your terminal—ideal for viva demos!)*
+# 4. Configure (copy .env.example and edit)
+copy .env.example .env
 
----
-
-## 🖥️ Running HoneyGuard
-
-### Step 1: Start HoneyGuard Unified Server
-Open your first terminal window and run:
-```powershell
+# 5. Run
 python dashboard.py
 ```
-* **Decoy SSH Honeypot:** Active on `0.0.0.0:2222`
-* **Canary Trap Watchdog:** Active on `canary_files/passwords.xlsx`
-* **SOC Admin Dashboard:** Accessible at `http://127.0.0.1:5000`
 
-### Step 2: Access SOC Dashboard
-1. Open your browser and navigate to: **`http://127.0.0.1:5000`**
-2. Log in using default credentials:
-   * **Username:** `admin`
-   * **Password:** `honeyguard_admin`
+Dashboard → **http://127.0.0.1:5000** · Default login: `admin` / `honeyguard_admin`
 
 ---
 
-## 🧪 Simulating Attacks (Viva Demonstration)
+## 🔥 Attack Simulator
 
-Open a **second terminal** window while the dashboard is running:
-```powershell
-python test_attack.py
-```
-You will see the interactive attack menu:
-```text
-===========================================================
-🍯 HONEYGUARD ATTACK SIMULATOR (VIVA & LAB TESTING)
-===========================================================
-Target: 127.0.0.1 (Local Decoy Only)
-Select an intrusion test:
-  [1] Single SSH Auth Check (Standard Rejection)
-  [2] Simulate Brute-Force Attack (6 Rapid Passwords)
-  [3] Simulate Credential Stuffing (5 Distinct Usernames)
-  [4] Simulate Rapid Port Probe / Sweep
-  [5] Simulate Canary Honeytoken Breach (passwords.xlsx)
-  [6] Run ALL Tests Sequentially
-  [0] Exit
-===========================================================
+### Via Dashboard (1-Click)
+Open the **Attack Simulator** panel at the bottom of the dashboard. Click any button:
+
+| Button | What it does |
+|--------|-------------|
+| **Brute Force** | 6 rapid SSH attempts on `127.0.0.1:2222` |
+| **Cred Stuffing** | 5 distinct usernames via SSH |
+| **Port Scan** | 7 rapid TCP probes |
+| **Canary Breach** | Touches `canary_files/passwords.xlsx` |
+| **All Tests** | Runs all four sequentially |
+
+### Via CLI (unchanged)
+```bash
+python test_attack.py          # Interactive menu
+python test_attack.py --all    # Run all tests
 ```
 
-### What Happens in Each Test:
-* **Option 1 (Single Auth):** Verifies the decoy intercepts credentials and immediately rejects authentication with zero shell access.
-* **Option 2 (Brute Force):** Fires 6 attempts in < 10 seconds. Triggers `BRUTE_FORCE` rule, raises `HIGH` alert, updates the live dashboard via WebSockets, and invokes `blocker.py`.
-* **Option 3 (Credential Stuffing):** Cycles through `root`, `ubuntu`, `postgres`, `cisco`, `oracle`. Triggers `CREDENTIAL_STUFFING` rule.
-* **Option 4 (Port Scan):** Rapidly opens/closes 6 TCP sockets. Triggers `PORT_SCAN` rule and raises a `MEDIUM` severity alert.
-* **Option 5 (Canary Breach):** Touches the decoy `canary_files/passwords.xlsx` file. Triggers an instant `CRITICAL` breach alert and popup warning.
+### Via API
+```bash
+curl -X POST http://127.0.0.1:5000/api/simulate/brute_force \
+     -H "Cookie: session=<your_session>"
+```
 
 ---
 
-## 🔒 Security Measures Implemented
-1. **Strict Anti-XSS Safeguards:** Attackers often inject payloads like `<script>alert('pwned')</script>` or `<img src=x onerror=...>` as usernames/passwords. In `static/js/dashboard.js`, all dynamic content is injected strictly using `element.textContent`, never `innerHTML`.
-2. **Decoy Shell Denial:** Paramiko's `check_channel_request`, `check_channel_pty_request`, and `check_channel_shell_request` are overridden to return `OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED` and `False`. Attackers cannot execute commands or browse files.
-3. **Loopback Dashboard Binding:** Flask binds to `127.0.0.1`, ensuring the management dashboard cannot be accessed from external WAN/LAN interfaces without proper admin access.
-4. **Firewall Dry-Run & Protection Allowlist:** `DRY_RUN=True` ensures student testers do not accidentally alter their machine's firewall rules during experimentation. The critical allowlist (`127.0.0.1`, `localhost`, `::1`) guarantees you can never block yourself.
-5. **No Hardcoded Secrets:** Credentials, API tokens, and thresholds are isolated in `.env` and `config.py`.
+## 🌐 HTTP Decoy Traps
+
+When deployed to the cloud (where port 2222 is blocked), these paths catch real web bots:
+
+| Path | Rule | Severity |
+|------|------|----------|
+| `/wp-login.php` | `WP_LOGIN` | MEDIUM |
+| `/phpmyadmin` | `PHPMYADMIN` | MEDIUM |
+| `/.env` | `ENV_PROBE` | HIGH |
+| `/admin-portal` | `ADMIN_PROBE` | MEDIUM |
+| `/.git/config` | `GIT_PROBE` | HIGH |
+| `/xmlrpc.php` | `XMLRPC` | LOW |
+| `/config.php` | `CONFIG_PROBE` | MEDIUM |
+| `/backup.zip` | `BACKUP_PROBE` | MEDIUM |
+
+All hits appear in the **live feed** and **alerts panel** immediately.
 
 ---
 
-## 📄 Generating PDF Threat Reports
-Click the **"Generate PDF Report"** button on the dashboard navbar, or call:
-```powershell
-python -c "import report; print(report.generate_pdf_report())"
+## ☁️ Cloud Deployment
+
+### Render.com (Free Tier)
+
+1. Push repo to GitHub
+2. Create a new **Web Service** → connect repo
+3. Set **Root Directory** to `HoneyGuard`
+4. Set **Build Command**: `pip install -r requirements.txt`
+5. Set **Start Command**: `gunicorn --worker-class eventlet --workers 1 --bind 0.0.0.0:$PORT "dashboard:app"`
+6. Add environment variables (`DASHBOARD_PASSWORD`, `DASHBOARD_SECRET_KEY`, `DRY_RUN=True`)
+
+Or use the included `render.yaml` for one-click deploy.
+
+### Docker
+
+```bash
+# Build from repo root
+docker build -t honeyguard .
+
+# Run locally
+docker run -p 5000:5000 \
+  -e DASHBOARD_PASSWORD=mysecret \
+  -e DASHBOARD_SECRET_KEY=mysecretkey \
+  honeyguard
 ```
-The report is generated in `reports/` with an executive summary, threat level assessment, top credentials targeted, and hardening recommendations.
-#   H o n e y G u a r d  
- 
+
+---
+
+## 🔒 Security Design
+
+- **Anti-XSS**: All attacker-supplied values (usernames, passwords, IPs, user-agents) are injected via `textContent` only — never `innerHTML`. This guarantees immunity against XSS from attacker payloads.
+- **Session-based auth**: Dashboard protected by Flask session login.
+- **Allowlist**: `127.0.0.1`, `::1`, `localhost` are never auto-blocked.
+- **DRY_RUN default**: Firewall blocking is simulation-only by default.
+
+---
+
+## 📊 Dashboard Features
+
+| Panel | Description |
+|-------|-------------|
+| Metric Cards | Threat Level · Total Attacks · Security Alerts · Blocked IPs |
+| Attack Intensity | Line chart (Chart.js) — attacks per minute, last 15 min |
+| Attack Breakdown | Doughnut chart — by rule type (Brute/Cred/Port/Canary/HTTP) |
+| Live Feed | Real-time table of SSH + HTTP trap events |
+| Alerts Panel | Rule engine alerts with severity badges |
+| Top Usernames | Ranked table of most-targeted usernames |
+| Top Passwords | Ranked table of most-tried passwords |
+| Firewall Blocklist | Active blocks with 1-click Unblock |
+| Simulator | 1-click attack triggers with live log |
+
+---
+
+## ⚙️ Detection Rules
+
+| Rule | Trigger |
+|------|---------|
+| **BRUTE_FORCE** | ≥5 login attempts from same IP within 60 s |
+| **CREDENTIAL_STUFFING** | ≥4 distinct usernames from same IP within 120 s |
+| **PORT_SCAN** | ≥5 TCP connection touches within 30 s |
+| **CANARY_BREACH** | Any access/modification of `canary_files/passwords.xlsx` |
+| **HTTP_TRAP_*** | Any request to decoy web paths |
+
+---
+
+## ⚠️ Ethical & Legal Notice
+
+This tool is intended **strictly for educational purposes and authorized security lab environments only**.
+
+- Run only on systems you own or have explicit written permission to monitor.
+- Never execute attack simulations against external networks.
+- The `test_attack.py` and dashboard simulator target **127.0.0.1 only**.

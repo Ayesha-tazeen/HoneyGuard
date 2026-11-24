@@ -1,99 +1,295 @@
-/* HoneyGuard SOC Dashboard Styling */
+/* ============================================================
+   HoneyGuard SOC Dashboard — Midnight Slate Theme
+   Colors: bg #0f172a | cards #1e293b | borders #334155
+           text #f8fafc | labels #cbd5e1
+   ============================================================ */
+
 :root {
-    --bg-main: #0b0f19;
-    --bg-surface: #111827;
-    --border-color: #1f2937;
-    --accent-blue: #3b82f6;
-    --accent-red: #ef4444;
-    --accent-amber: #f59e0b;
-    --accent-green: #10b981;
+    --bg-main:        #0f172a;
+    --bg-surface:     #1e293b;
+    --bg-raised:      #263348;
+    --border-color:   #334155;
+    --text-primary:   #ffffff;
+    --text-label:     #e2e8f0;
+    --text-muted:     #94a3b8;
+    --accent-blue:    #38bdf8;
+    --accent-green:   #4ade80;
+    --accent-amber:   #fbbf24;
+    --accent-red:     #f87171;
+    --accent-purple:  #c084fc;
+    --accent-cyan:    #22d3ee;
 }
+
+/* ── Base ────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
 body {
     background-color: var(--bg-main) !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    color: #e5e7eb;
+    color: var(--text-primary) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                 "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.6;
 }
 
+a { color: var(--accent-blue); }
+
+/* ── Surface cards ───────────────────────────────────────── */
 .bg-surface {
     background-color: var(--bg-surface) !important;
     border: 1px solid var(--border-color) !important;
 }
 
-.login-body {
-    background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0b0f19 100%);
-}
-
-.login-card {
+.card {
     background-color: var(--bg-surface);
-    border: 1px solid #374151;
-    width: 100%;
-    max-width: 420px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
 }
 
+.card-header {
+    background-color: transparent !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+/* ── Navbar ──────────────────────────────────────────────── */
+.navbar {
+    background-color: var(--bg-surface) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.navbar-brand { color: var(--text-primary) !important; }
+
+/* ── Metric cards ────────────────────────────────────────── */
 .metric-card {
     border-radius: 12px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
 }
 
 .metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
 }
 
+.metric-icon {
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 10px;
+}
+
+/* ── Tables ──────────────────────────────────────────────── */
+.table {
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.table thead th {
+    background-color: var(--bg-raised) !important;
+    color: var(--text-label) !important;
+    border-color: var(--border-color) !important;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.table tbody tr {
+    border-color: var(--border-color) !important;
+    transition: background-color 0.12s;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(255,255,255,0.04) !important;
+}
+
+.table-dark {
+    --bs-table-bg: transparent !important;
+    --bs-table-hover-bg: rgba(255,255,255,0.04) !important;
+    --bs-table-border-color: var(--border-color) !important;
+}
+
+/* ── Severity Badges ─────────────────────────────────────── */
+.badge-severity {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 3px 8px;
+    border-radius: 5px;
+    display: inline-block;
+}
+
+.sev-CRITICAL {
+    background-color: #7c3aed;
+    color: #ede9fe;
+    border: 1px solid #a855f7;
+    animation: pulse-critical 1.4s infinite;
+}
+
+.sev-HIGH {
+    background-color: #dc2626;
+    color: #fee2e2;
+    border: 1px solid var(--accent-red);
+    animation: pulse-danger 1.6s infinite;
+}
+
+.sev-MEDIUM {
+    background-color: #92400e;
+    color: #fef3c7;
+    border: 1px solid var(--accent-amber);
+}
+
+.sev-LOW {
+    background-color: #065f46;
+    color: #d1fae5;
+    border: 1px solid var(--accent-green);
+}
+
+@keyframes pulse-critical {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.6); }
+    50%       { opacity: 0.85; box-shadow: 0 0 0 5px rgba(168, 85, 247, 0); }
+}
+
+@keyframes pulse-danger {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.7; }
+}
+
+/* ── Threat Level ─────────────────────────────────────────── */
 .threat-badge {
     padding: 2px 10px;
     border-radius: 6px;
     display: inline-block;
+    font-weight: 700;
+    letter-spacing: 0.04em;
 }
 
-.threat-low {
-    color: var(--accent-green) !important;
+.threat-low      { color: var(--accent-green)  !important; }
+.threat-medium   { color: var(--accent-amber)  !important; }
+.threat-high     { color: var(--accent-red)    !important; animation: pulse-danger 1.6s infinite; }
+.threat-critical { color: #c084fc !important; animation: pulse-critical 1.4s infinite; }
+
+/* ── Simulator Panel ──────────────────────────────────────── */
+.simulator-panel {
+    background: linear-gradient(135deg, #1e2d3f 0%, #1e293b 100%);
+    border: 1px solid #334155;
+    border-radius: 10px;
 }
 
-.threat-medium {
-    color: var(--accent-amber) !important;
+.sim-btn {
+    min-width: 148px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    transition: transform 0.15s, box-shadow 0.15s;
 }
 
-.threat-high {
-    color: var(--accent-red) !important;
-    animation: pulse-danger 1.5s infinite;
+.sim-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
 }
 
-@keyframes pulse-danger {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
+.sim-btn:disabled { opacity: 0.55; }
+
+#simStatusBadge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
 }
 
-.fs-7 {
-    font-size: 0.75rem;
+/* ── Chart container ─────────────────────────────────────── */
+.chart-wrapper {
+    position: relative;
+    height: 300px;
 }
 
-.fs-8 {
-    font-size: 0.7rem;
+/* ── Top Tables inside cards ──────────────────────────────── */
+.top-table th, .top-table td {
+    padding: 0.4rem 0.6rem !important;
+    font-size: 0.82rem;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary);
 }
 
-/* Custom scrollbars */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+.top-table tbody tr:nth-child(odd) { background-color: rgba(255,255,255,0.02); }
+
+/* ── Scrollbars ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-main); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+/* ── Login page ──────────────────────────────────────────── */
+.login-body {
+    background: radial-gradient(circle at 50% 40%, #1e3a5f 0%, var(--bg-main) 70%);
 }
 
-::-webkit-scrollbar-track {
-    background: #0f172a;
+.login-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    width: 100%;
+    max-width: 430px;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #334155;
-    border-radius: 3px;
+/* ── Force ALL form inputs dark — override Bootstrap white ── */
+input, textarea, select,
+.form-control, .form-select,
+.input-group-text {
+    background-color: #0f172a !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: #475569;
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+    opacity: 1 !important;
 }
 
-/* Leaflet Map overrides for dark SOC UI */
-.leaflet-container {
-    background-color: #0b0f19 !important;
+input:focus, textarea:focus, select:focus,
+.form-control:focus, .form-select:focus {
+    background-color: #0f172a !important;
+    border-color: var(--accent-blue) !important;
+    color: var(--text-primary) !important;
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.2) !important;
 }
+
+/* Chrome autofill dark override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+    -webkit-text-fill-color: var(--text-primary) !important;
+    caret-color: var(--text-primary) !important;
+}
+
+/* ── Live feed highlight (new row flash) ─────────────────── */
+@keyframes row-flash {
+    from { background-color: rgba(56,189,248,0.18); }
+    to   { background-color: transparent; }
+}
+.row-new { animation: row-flash 1.4s ease-out; }
+
+/* ── Utility helpers ─────────────────────────────────────── */
+.fs-7 { font-size: 0.75rem; }
+.fs-8 { font-size: 0.70rem; }
+.text-label { color: var(--text-label) !important; }
+.text-muted-soc { color: var(--text-muted) !important; }
+.border-soc { border-color: var(--border-color) !important; }
+.btn-xs { padding: 0.1rem 0.5rem; font-size: 0.75rem; }
+
+/* ── List group overrides ────────────────────────────────── */
+.list-group-item {
+    background-color: transparent !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Bootstrap dark overrides ────────────────────────────── */
+.bg-dark { background-color: var(--bg-raised) !important; }
+.border-secondary { border-color: var(--border-color) !important; }
+.text-secondary { color: var(--text-label) !important; }
+.text-muted { color: var(--text-muted) !important; }
+
+/* ── Decoy trap hit row ──────────────────────────────────── */
+.trap-row td { color: var(--accent-purple) !important; }

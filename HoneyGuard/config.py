@@ -1,6 +1,7 @@
 """
 HoneyGuard Configuration Module
 Contains all system settings, thresholds, and environment variables.
+Supports both local (127.0.0.1) and cloud (0.0.0.0:$PORT) deployment.
 """
 
 import os
@@ -56,8 +57,16 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
 TELEGRAM_ENABLED = os.getenv("TELEGRAM_ENABLED", "False").strip().lower() in ("true", "1", "yes")
 
 # --- WEB DASHBOARD SETTINGS ---
-DASHBOARD_HOST = "127.0.0.1"  # Bound to local loopback for security
-DASHBOARD_PORT = int(os.getenv("DASHBOARD_PORT", "5000"))
+# Cloud-aware binding: use 0.0.0.0 when PORT env var is set (Render/Railway),
+# otherwise bind to 127.0.0.1 for local security.
+_port_env = os.getenv("PORT", "").strip()
+if _port_env:
+    DASHBOARD_HOST = "0.0.0.0"
+    DASHBOARD_PORT = int(_port_env)
+else:
+    DASHBOARD_HOST = os.getenv("DASHBOARD_HOST", "127.0.0.1")
+    DASHBOARD_PORT = int(os.getenv("DASHBOARD_PORT", "5000"))
+
 DASHBOARD_SECRET_KEY = os.getenv("DASHBOARD_SECRET_KEY", "honeyguard_super_secret_session_key_2026")
 DASHBOARD_USERNAME = os.getenv("DASHBOARD_USERNAME", "admin")
 DASHBOARD_PASSWORD = os.getenv("DASHBOARD_PASSWORD", "honeyguard_admin")
